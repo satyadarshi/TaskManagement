@@ -1,0 +1,51 @@
+﻿<h3>TaskData</h3>
+@page "/fetchtaskdata";
+
+@using TaskManagementBlazor.Models 
+@using TaskManagementBlazor.Services
+@inject HttpClient Http
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoadTasks">Search</MudButton>
+<MudTable Items="tasks" Hover="true">
+    <HeaderContent>
+        <MudTh>Task Name</MudTh>
+        <MudTh>Tags</MudTh>
+        <MudTh>Due Date</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Assigned To</MudTh>
+        <MudTh>Activities</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Task Name">@context.TaskName</MudTd>
+        <MudTd DataLabel="Tags">@string.Join(", ", context.Tags)</MudTd>
+        <MudTd DataLabel="Due Date">@context.DueDate</MudTd>
+        <MudTd DataLabel="Status">@context.Status</MudTd>
+        <MudTd DataLabel="Assigned To">@context.AssignedTo</MudTd>
+        <MudTd DataLabel="Activities">@context.Activities.Count</MudTd>
+        <MudTd>
+            <button class="btn btn-primary btn-sm">
+                Edit
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" OnClick="() => ShowTaskDetails(context.Id)">Delete</button>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<TaskViewModel> tasks;
+
+    protected override async Task OnInitializedAsync()
+    {
+        tasks = await Http.GetFromJsonAsync<List<TaskViewModel>>($"https://localhost:7299/api/taskmanager/taskdetail/GetTasks");
+    }
+    private async Task LoadTasks()
+    {
+        tasks = await Http.GetFromJsonAsync<List<TaskViewModel>>($"https://localhost:7299/api/taskmanager/taskdetail/GetTasks");
+    }
+
+    private void ShowTaskDetails(int taskId)
+    {
+        // Navigate to task details page
+    }
+}

@@ -1,0 +1,234 @@
+﻿@page "/fetchtasks"
+
+@using TaskManagementBlazor.Models;
+@using TaskManagementBlazor.Services;
+
+@inject ITaskService TaskService
+@inject MudBlazor.ISnackbar snackBar
+
+<MudCard Elevation="25">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Add / Edit Task</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudTextField @bind-Value="task.TaskName" Label="Task Name" Variant="Variant.Text" Margin="Margin.Normal"></MudTextField>
+        <MudDatePicker Label="Due Date" @bind-Date="_duedate" />
+        <MudTextField @bind-Value="task.TagName" Label="Tags" Variant="Variant.Text" Margin="Margin.Normal"></MudTextField>
+        <MudTextField @bind-Value="task.Color" Label="Color" Variant="Variant.Text" Margin="Margin.Normal"></MudTextField>
+        <MudTextField @bind-Value="task.Status" Label="Status" Variant="Variant.Text" Margin="Margin.Normal"></MudTextField>
+        <MudTextField @bind-Value="task.AssignedTo" Label="AssignedTo" Variant="Variant.Text" Margin="Margin.Normal"></MudTextField>
+        <br />
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Save">Save Task</MudButton>
+    </MudCardContent>
+</MudCard>
+<br />
+<MudTable Elevation="25" Items="LoadTasks()" Filter="new Func<TaskViewModel, bool>(Search)" @bind-task="task">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Tasks</MudText>
+        <MudToolSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Search for Tasks..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Task Name</MudTh>
+        <MudTh>Tags</MudTh>
+        <MudTh>Color</MudTh>
+        <MudTh>Due Date</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Assigned</MudTh>
+        <MudTh>Activites</MudTh>
+    </HeaderContent>
+     <RowTemplate>
+        <MudTd DataLabel="Task Name">@context.TaskName</MudTd>
+        <MudTd DataLabel="Tags" >@context.TagName</MudTd>
+         <MudTd DataLabel="Tags" >@context.Color</MudTd>
+        <MudTd DataLabel="Due Date">@context.DueDate</MudTd>
+        <MudTd DataLabel="Status">@context.Status</MudTd>
+        <MudTd DataLabel="Assigned To">@context.AssignedTo</MudTd>
+        @* <MudTd DataLabel="Activities">@context.Activities.Count</MudTd> *@
+        <MudTd><MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="@(() => ShowBtnPress(context.Id))">@((context.Activities.Count()==0)? "Hide" : "Show") Activity Details</MudButton></MudTd>
+        @if (ShowDetails)
+        {
+         <ChildRowContent>
+
+          <MudTr>
+           <td colspan="3">
+	        <MudCard Elevation="0">
+	         <MudCardHeader>
+	          <CardHeaderContent>
+	           <MudText Typo="Typo.body1">Activity Details for <strong>@context.TaskName</strong></MudText>
+	          </CardHeaderContent>
+	         </MudCardHeader>
+	         <MudCardContent Class="pa-0">
+	          <MudTable Items="@context.Activities" Context="ActivityContext" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0">
+	           <ColGroup>
+		        <col />
+		        <col />
+		        <col style="width:200px;" />
+	           </ColGroup>
+	           <HeaderContent>
+		        <MudTh>description</MudTh>
+		        <MudTh>Done by</MudTh>
+		        <MudTh>Activity Date</MudTh>
+	           </HeaderContent>
+	           <RowTemplate>
+		        <MudTd DataLabel="Description">@ActivityContext.Description</MudTd>
+		        <MudTd DataLabel="Done By">@ActivityContext.DoneBy</MudTd>
+		        <MudTd DataLabel="Activity Date">@ActivityContext.ActivityDate</MudTd>
+	           </RowTemplate>
+	          </MudTable>
+	         </MudCardContent>
+	        </MudCard>
+           </td>
+          </MudTr>
+		
+	   </ChildRowContent>
+    }
+        <MudTd DataLabel="">
+            <MudFab @onclick="@(()=>Edit(context.Id))" Color="Color.Primary" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" IconSize="Size.Small" />
+             <MudFab @onclick="@(()=>CompleteTask(context.Id))" Color="Color.Primary" Icon="@Icons.Material.Filled.Commit" Size="Size.Small" IconSize="Size.Small" />
+            <MudFab @onclick="@(()=>DeleteTask(context.Id))" Color="Color.Secondary" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+
+    private TaskViewModel task = new TaskViewModel();
+    private GetActivityListViewModel activity = new GetActivityListViewModel();
+    private List<TaskViewModel> tasks;
+    private bool hover = false;
+    private string searchString = "";
+    bool ShowDetails = false;
+    private DateTime? _duedate;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadTasks();
+    }
+
+    private List<TaskViewModel> LoadTasks()
+    {
+        tasks = TaskService.GetTasks();
+        foreach(var _task in tasks)
+        {
+            _task.TagName= FormatTags(_task.Tags);
+        }
+        return tasks;
+    }
+    private bool Search(TaskViewModel taskSearch)
+    {
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        if (taskSearch.TaskName.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+            || taskSearch.Status.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+            || taskSearch.TagName.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+            || taskSearch.Status.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        return false;
+    }
+    private string FormatTags(List<GetTagListViewModel> tags)
+    {
+        string tag = string.Empty;
+        if(tags.Count > 0)
+        {
+            foreach (var item in tags)
+            {
+                if (!string.IsNullOrWhiteSpace(tag))
+                {
+                    tag = tag + ","+ item.Name;
+                }
+                else
+                {
+                    tag = item.Name;
+                }
+            }
+        }
+        return tag;
+    }
+    private void Save()
+    {
+        CreateTaskDetailCommand commandCreate = new CreateTaskDetailCommand();
+        UpdateTaskDetailCommand commandUpdate = new UpdateTaskDetailCommand();
+        commandUpdate.UpdateDetails = new UpdateTaskDetail();
+        commandCreate.Details = new List<CreateTaskModel>();
+
+        List<string> lstTagVM = new List<string>();
+        CreateTaskModel createTask = new CreateTaskModel();
+
+        if (!string.IsNullOrWhiteSpace(task.TagName))
+        {
+            if (task.TagName.Contains(","))
+            {
+                string[] strSplit = task.TagName.Split(",");
+                foreach (var str in strSplit)
+                {
+                    lstTagVM.Add(str);
+                }
+            }
+            else
+            {
+                lstTagVM.Add(task.TagName);
+            }
+        }
+        if (task.Id > 0)
+        {
+            commandUpdate.UpdateDetails.Id = task.Id;
+            commandUpdate.UpdateDetails.tags = lstTagVM;
+            commandUpdate.UpdateDetails.due_date = _duedate;
+            commandUpdate.UpdateDetails.task_name = task.TaskName;
+            commandUpdate.UpdateDetails.assigned_to = task.AssignedTo;
+            commandUpdate.UpdateDetails.color = task.Color;
+            commandUpdate.UpdateDetails.status = task.Status;
+            TaskService.UpdateTask(commandUpdate);
+            snackBar.Add("Task successfully Updated.", Severity.Success);
+        }
+        else
+        {
+            createTask.tags = lstTagVM;
+            createTask.due_date = _duedate;
+            createTask.task_name = task.TaskName;
+            createTask.assigned_to = task.AssignedTo;
+            createTask.color = task.Color;
+            createTask.status = task.Status;
+            commandCreate.Details.Add(createTask);
+            TaskService.AddTask(commandCreate);
+            snackBar.Add("Task successfully created.", Severity.Success);
+        }
+
+        LoadTasks();
+    }
+    private void Edit(int id)
+    {
+        task = tasks.FirstOrDefault(c => c.Id == id);
+        _duedate = task.DueDate;
+    }
+    private void DeleteTask(int id)
+    {
+        TaskService.DeleteTask(id);
+        snackBar.Add("Task has been sucessfully Deleted.", Severity.Success);
+        LoadTasks();
+    }
+    private void CompleteTask(int id)
+    {
+        TaskService.MarkTaskAsCompleted(id);
+        snackBar.Add("Task has been successfully Completed", Severity.Success);
+        LoadTasks();
+    }
+    private bool ShowBtnPress(int id)
+    {
+        task = tasks.FirstOrDefault(c => c.Id == id);
+        if(task.Activities.Count() > 0)
+        {
+            ShowDetails = true;
+        }
+        else
+        {
+            ShowDetails = false;
+        }
+        return ShowDetails;
+    }
+}
