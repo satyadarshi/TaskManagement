@@ -14,7 +14,6 @@ namespace TaskManagementBlazor.Services
         public TaskService(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("https://localhost:7299/api/taskmanager/taskdetail/");
         }
 
         public List<TaskViewModel> GetTasks()

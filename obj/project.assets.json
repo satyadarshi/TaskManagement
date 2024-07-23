@@ -715,11 +715,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\.NETProjectsGitHub\\TaskManagementBlazor\\TaskManagementBlazor.csproj",
+      "projectUniqueName": "C:\\.NETProjectsGitHub\\TaskManagement\\TaskManagementBlazor.csproj",
       "projectName": "TaskManagementBlazor",
-      "projectPath": "C:\\.NETProjectsGitHub\\TaskManagementBlazor\\TaskManagementBlazor.csproj",
+      "projectPath": "C:\\.NETProjectsGitHub\\TaskManagement\\TaskManagementBlazor.csproj",
       "packagesPath": "C:\\Users\\satya\\.nuget\\packages\\",
-      "outputPath": "C:\\.NETProjectsGitHub\\TaskManagementBlazor\\obj\\",
+      "outputPath": "C:\\.NETProjectsGitHub\\TaskManagement\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\satya\\AppData\\Roaming\\NuGet\\NuGet.Config",
