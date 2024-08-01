@@ -18,9 +18,8 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore .\TaskManagementBlazor.sln
+      run: dotnet restore ./TaskManagementBlazor.sln
             
     - name: Build
-      run: dotnet build \TaskManagementBlazor.sln --no-restore      
-      working-directory: ./ArchitectureThreeLayersWebAPI
-      
+      run: dotnet build /TaskManagementBlazor.sln --no-restore      
+           
