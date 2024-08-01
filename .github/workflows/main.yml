@@ -15,10 +15,10 @@ jobs:
       - name: Setup .NET 
         uses: actions/checkout@v4
         with:
-          dotnet-version: '6.0.X'
+          dotnet-version: '6.0.0'
           
       - name: Restore
-        run: dotnet restore ./TaskManager.Api\TaskManager.Api.csproj
+        run: dotnet restore .TaskManagementBlazor.sln
       - name: Build
-        run: dotnet build ./TaskManager.Api\TaskManager.Api.csproj
+        run: dotnet build .TaskManagementBlazor.sln
       
